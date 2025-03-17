@@ -1,34 +1,46 @@
-# Use KasmVNC Ubuntu-based desktop image
-FROM kasmweb/ubuntu-focal-desktop:1.13.0
+FROM ubuntu:22.04
 
-# Switch to root user to install packages
-USER root
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive \
+    HOME=/root \
+    DISPLAY=:1 \
+    VNC_PORT=5901 \
+    NOVNC_PORT=6080 \
+    RESOLUTION=1280x800x24
 
-# Disable the faulty Chrome repo to prevent GPG errors
-RUN rm -f /etc/apt/sources.list.d/google-chrome.list || true
+# Install necessary packages
+RUN apt update && apt install -y \
+    x11vnc \
+    xvfb \
+    fluxbox \
+    xournal \
+    novnc \
+    websockify \
+    unzip \
+    supervisor \
+    wget \
+    curl \
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install software-properties-common, add the universe repository, and *then* update and install xournalpp
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository universe && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends xournalpp && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Set up TigerVNC server
+RUN mkdir -p ~/.vnc && \
+    echo "x11vnc -forever -usepw -display :1 -rfbport ${VNC_PORT}" > ~/.vnc/x11vnc.sh && \
+    chmod +x ~/.vnc/x11vnc.sh
 
-# Switch back to non-root user for security
-USER 1000
+# Install noVNC manually and set up symlinks
+RUN mkdir -p /opt/novnc && \
+    wget -O /opt/novnc/novnc.zip https://github.com/novnc/noVNC/archive/refs/tags/v1.4.0.zip && \
+    unzip /opt/novnc/novnc.zip -d /opt/novnc/ && \
+    mv /opt/novnc/noVNC-1.4.0 /opt/novnc/noVNC && \
+    ln -s /opt/novnc/noVNC/utils/novnc_proxy /usr/bin/novnc_proxy && \
+    ln -s /opt/novnc/noVNC/vnc.html /opt/novnc/index.html
 
-# Set up environment for KasmVNC
-ENV USER=kasm-user
-ENV HOME=/home/${USER}
+# Supervisor configuration
+RUN mkdir -p /etc/supervisor/conf.d
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Set the working directory
-WORKDIR ${HOME}
+# Expose ports for VNC and noVNC
+EXPOSE ${VNC_PORT} ${NOVNC_PORT}
 
-# Make sure Xournal++ starts on login.  Use .bashrc
-RUN echo 'xournalpp &' >> /home/${USER}/.bashrc && \
-    chown ${USER}:${USER} /home/${USER}/.bashrc
-
-# Set the default command to start KasmVNC
-CMD ["/usr/bin/supervisord"]
+# Start services
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

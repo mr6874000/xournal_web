@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  xournal-web:
+    build: .
+    container_name: xournal-web
+    ports:
+      - "6080:6080"  # Expose noVNC on port 6080
+    environment:
+      - DISPLAY=:1
+      - VNC_PORT=5901
+      - NOVNC_PORT=6080
+      - RESOLUTION=1280x800x24
+    restart: unless-stopped
