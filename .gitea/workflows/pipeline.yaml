@@ -109,9 +109,3 @@ jobs:
       # Print the final job status
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
-      # Send notification via Python script
-      - name: Send notification to Gotify
-        if: always()
-        run: |
-          source venv/bin/activate
-          python3 .gitea/.scripts/notify.py "${{ gitea.ref }}" "${{ job.status }}" "${{ env.IMAGE_NAME }}"
