@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-# Set environment variables
+# Set environment variables (consistent with the rest of your setup)
 ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/root \
     DISPLAY=:1 \
@@ -22,12 +22,7 @@ RUN apt update && apt install -y \
     curl \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Set up TigerVNC server
-RUN mkdir -p ~/.vnc && \
-    echo "x11vnc -forever -usepw -display :1 -rfbport ${VNC_PORT}" > ~/.vnc/x11vnc.sh && \
-    chmod +x ~/.vnc/x11vnc.sh
-
-# Install noVNC manually and set up symlinks
+# Install noVNC manually and set up symlinks (no changes here, but kept for completeness)
 RUN mkdir -p /opt/novnc && \
     wget -O /opt/novnc/novnc.zip https://github.com/novnc/noVNC/archive/refs/tags/v1.4.0.zip && \
     unzip /opt/novnc/novnc.zip -d /opt/novnc/ && \
@@ -35,12 +30,11 @@ RUN mkdir -p /opt/novnc && \
     ln -s /opt/novnc/noVNC/utils/novnc_proxy /usr/bin/novnc_proxy && \
     ln -s /opt/novnc/noVNC/vnc.html /opt/novnc/index.html
 
-# Supervisor configuration
-RUN mkdir -p /etc/supervisor/conf.d
+# Supervisor configuration (moved to Dockerfile for better organization)
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Expose ports for VNC and noVNC
+# Expose ports
 EXPOSE ${VNC_PORT} ${NOVNC_PORT}
 
-# Start services
+# Start supervisord as the main process
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
