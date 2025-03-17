@@ -4,6 +4,7 @@ services:
   xournal-web:
     build: .
     container_name: xournal-web
+    image: xournal-web
     ports:
       - "6080:6080"  # Expose noVNC on port 6080
     environment:

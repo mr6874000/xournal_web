@@ -31,7 +31,9 @@ RUN mkdir -p /opt/novnc && \
     ln -s /opt/novnc/noVNC/vnc.html /opt/novnc/index.html
 
 # Supervisor configuration (moved to Dockerfile for better organization)
+RUN rm -f /etc/supervisor/conf.d/supervisord.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 
 # Expose ports
 EXPOSE ${VNC_PORT} ${NOVNC_PORT}
