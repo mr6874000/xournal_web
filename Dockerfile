@@ -34,7 +34,14 @@ RUN mkdir -p /opt/novnc && \
     ln -s /opt/novnc/noVNC/utils/novnc_proxy /usr/bin/novnc_proxy && \
     ln -s /opt/novnc/noVNC/vnc.html /opt/novnc/index.html
 
-# Supervisor configuration
+# Create the Fluxbox configuration file during the build.  MUCH more reliable.
+RUN mkdir -p /root/.fluxbox && \
+    echo "[app] (name=xournalpp)" > /root/.fluxbox/apps && \
+    echo "  [Deco]        {NONE}" >> /root/.fluxbox/apps && \
+    echo "  [Fullscreen]  {yes}" >> /root/.fluxbox/apps && \
+    echo "[end]" >> /root/.fluxbox/apps
+
+# Supervisor configuration (Modified - see below)
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose ports
