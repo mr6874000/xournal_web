@@ -88,15 +88,8 @@ jobs:
             exit 1
           fi
 
-      # Redeploy on TrueNAS
       - name: Redeploy on TrueNAS
         if: ${{ env.TRUENAS_DEPLOY == 'true' && env.IS_DEV_BRANCH == 'false' }}
-        run: |
-          source venv/bin/activate
-          python3 .gitea/.scripts/redeploy.py
-
-      - name: Redeploy on Docker
-        if: ${{ env.DOCKER_DEPLOY == 'true' && env.IS_DEV_BRANCH == 'false' }}
         run: |
           set -e  # Exit immediately if any command exits with a non-zero status
           CHART_NAME="${IMAGE_NAME}"
