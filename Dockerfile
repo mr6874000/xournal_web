@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-# Set environment variables (consistent with the rest of your setup)
+# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     HOME=/root \
     DISPLAY=:1 \
@@ -8,21 +8,25 @@ ENV DEBIAN_FRONTEND=noninteractive \
     NOVNC_PORT=6080 \
     RESOLUTION=1280x800x24
 
-# Install necessary packages
+# Install necessary packages, including xournalpp and its dependencies
 RUN apt update && apt install -y \
     x11vnc \
     xvfb \
     fluxbox \
-    xournal \
+    xournalpp \
     novnc \
     websockify \
     unzip \
     supervisor \
     wget \
     curl \
+    libgtk-3-0 \
+    libgl1-mesa-glx \
+    libglu1-mesa \
+    libpoppler-glib8 \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install noVNC manually and set up symlinks (no changes here, but kept for completeness)
+# Install noVNC manually and set up symlinks
 RUN mkdir -p /opt/novnc && \
     wget -O /opt/novnc/novnc.zip https://github.com/novnc/noVNC/archive/refs/tags/v1.4.0.zip && \
     unzip /opt/novnc/novnc.zip -d /opt/novnc/ && \
@@ -30,10 +34,8 @@ RUN mkdir -p /opt/novnc && \
     ln -s /opt/novnc/noVNC/utils/novnc_proxy /usr/bin/novnc_proxy && \
     ln -s /opt/novnc/noVNC/vnc.html /opt/novnc/index.html
 
-# Supervisor configuration (moved to Dockerfile for better organization)
-RUN rm -f /etc/supervisor/conf.d/supervisord.conf
+# Supervisor configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 
 # Expose ports
 EXPOSE ${VNC_PORT} ${NOVNC_PORT}
