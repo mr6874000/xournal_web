@@ -100,7 +100,7 @@ jobs:
         run: |
           set -e  # Exit immediately if any command exits with a non-zero status
           CHART_NAME="${IMAGE_NAME}"
-          URL="http://api.home.lab/api/truenas/redeploy/${CHART_NAME}"
+          URL="http://10.25.0.112:8100/api/truenas/redeploy/${CHART_NAME}"
           
           echo "Triggering redeployment for chart: $CHART_NAME"
           
