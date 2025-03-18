@@ -95,16 +95,27 @@ jobs:
           source venv/bin/activate
           python3 .gitea/.scripts/redeploy.py
 
-      # Redeploy on Docker
       - name: Redeploy on Docker
         if: ${{ env.DOCKER_DEPLOY == 'true' && env.IS_DEV_BRANCH == 'false' }}
         run: |
           set -e  # Exit immediately if any command exits with a non-zero status
-          source venv/bin/activate
-          if ! python3 .gitea/.scripts/docker.py; then
-            echo "❌ Deployment script failed!"
+          CHART_NAME="${IMAGE_NAME}"
+          URL="http://api.home.lab/api/truenas/redeploy/${CHART_NAME}"
+          
+          echo "Triggering redeployment for chart: $CHART_NAME"
+          
+          response=$(curl -s -o response.txt -w "%{http_code}" "$URL")
+
+          if [ "$response" -ne 200 ]; then
+            echo "❌ Failed to trigger redeployment! HTTP status: $response"
+            cat response.txt
             exit 1
+          else
+            echo "✅ Redeployment triggered successfully!"
           fi
+        env:
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+
 
       # Print the final job status
       - run: echo "🍏 This job's status is ${{ job.status }}."
